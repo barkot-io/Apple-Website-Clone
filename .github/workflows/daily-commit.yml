@@ -21,13 +21,42 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Create and push dynamic empty commit
+      name: Realistic Daily Commits
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch: 
+
+jobs:
+  commit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Git Configuration
         run: |
-          # Generate a dynamic timestamp
-          TIMESTAMP=$(date -u +'%Y-%m-%d %H:%M:%S UTC')
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Create and push random number of commits
+        run: |
+          RANDOM_COMMITS=$(( RANDOM % 6 ))
+          echo "Randomly selected to make $RANDOM_COMMITS commits today."
           
-          # Create the empty commit with a detailed message
-          git commit --allow-empty -m "chore: routine repository sync - $TIMESTAMP"
+          if [ $RANDOM_COMMITS -eq 0 ]; then
+            echo "Taking a day off! No commits today to look realistic."
+            exit 0
+          fi
           
-          # Push to the repository
+          for i in $(seq 1 $RANDOM_COMMITS)
+          do
+            TIMESTAMP=$(date -u +'%Y-%m-%d %H:%M:%S UTC')
+            git commit --allow-empty -m "chore: routine repository sync - $TIMESTAMP - commit $i"
+          done
+          
           git push
