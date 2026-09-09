@@ -1,0 +1,33 @@
+name: Daily Dynamic Empty Commit
+
+on:
+  schedule:
+    # This runs at 06:00 UTC, which translates to 9:00 AM local time (EAT)
+    - cron: '0 6 * * *'
+  workflow_dispatch: 
+
+jobs:
+  commit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Git Configuration
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Create and push dynamic empty commit
+        run: |
+          # Generate a dynamic timestamp
+          TIMESTAMP=$(date -u +'%Y-%m-%d %H:%M:%S UTC')
+          
+          # Create the empty commit with a detailed message
+          git commit --allow-empty -m "chore: routine repository sync - $TIMESTAMP"
+          
+          # Push to the repository
+          git push
