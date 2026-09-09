@@ -1,9 +1,10 @@
-name: Daily Dynamic Empty Commit
+name: Realistic Scattered Daily Commits
 
 on:
   schedule:
-    # This runs at 06:00 UTC, which translates to 9:00 AM local time (EAT)
-    - cron: '0 6 * * *'
+    # Triggers 4 times a day: 6:00, 10:00, 14:00, and 18:00 UTC
+    # This translates to 9:00 AM, 1:00 PM, 5:00 PM, and 9:00 PM EAT
+    - cron: '0 6,10,14,18 * * *'
   workflow_dispatch: 
 
 jobs:
@@ -21,42 +22,24 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      name: Realistic Daily Commits
-
-on:
-  schedule:
-    - cron: '0 6 * * *'
-  workflow_dispatch: 
-
-jobs:
-  commit:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Git Configuration
+      - name: Create and push commits with random probability
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-      - name: Create and push random number of commits
-        run: |
-          RANDOM_COMMITS=$(( RANDOM % 6 ))
-          echo "Randomly selected to make $RANDOM_COMMITS commits today."
+          # 50% chance to skip this specific time slot entirely
+          SHOULD_RUN=$(( RANDOM % 2 ))
           
-          if [ $RANDOM_COMMITS -eq 0 ]; then
-            echo "Taking a day off! No commits today to look realistic."
+          if [ $SHOULD_RUN -eq 0 ]; then
+            echo "Coin flip landed on 0: Skipping this time slot for extra randomness."
             exit 0
           fi
+          
+          # If we didn't skip, pick 1 to 3 commits for this batch
+          RANDOM_COMMITS=$(( (RANDOM % 3) + 1 ))
+          echo "Coin flip landed on 1: Making $RANDOM_COMMITS commits right now."
           
           for i in $(seq 1 $RANDOM_COMMITS)
           do
             TIMESTAMP=$(date -u +'%Y-%m-%d %H:%M:%S UTC')
-            git commit --allow-empty -m "chore: routine repository sync - $TIMESTAMP - commit $i"
+            git commit --allow-empty -m "chore: routine repository sync - $TIMESTAMP - batch commit $i"
           done
           
           git push
