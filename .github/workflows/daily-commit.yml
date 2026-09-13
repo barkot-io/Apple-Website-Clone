@@ -2,8 +2,6 @@ name: Realistic Scattered Daily Commits
 
 on:
   schedule:
-    # Triggers 4 times a day: 6:00, 10:00, 14:00, and 18:00 UTC
-    # This translates to 9:00 AM, 1:00 PM, 5:00 PM, and 9:00 PM EAT
     - cron: '0 6,10,14,18 * * *'
   workflow_dispatch: 
 
@@ -24,17 +22,15 @@ jobs:
 
       - name: Create and push commits with random probability
         run: |
-          # 50% chance to skip this specific time slot entirely
           SHOULD_RUN=$(( RANDOM % 2 ))
           
           if [ $SHOULD_RUN -eq 0 ]; then
-            echo "Coin flip landed on 0: Skipping this time slot for extra randomness."
+            echo "Coin flip landed on 0: Skipping this time slot."
             exit 0
           fi
           
-          # If we didn't skip, pick 1 to 3 commits for this batch
           RANDOM_COMMITS=$(( (RANDOM % 3) + 1 ))
-          echo "Coin flip landed on 1: Making $RANDOM_COMMITS commits right now."
+          echo "Coin flip landed on 1: Making $RANDOM_COMMITS commits."
           
           for i in $(seq 1 $RANDOM_COMMITS)
           do
